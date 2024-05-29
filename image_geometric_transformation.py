@@ -185,6 +185,6 @@ if __name__ == "__main__" :
     # ImageFlip(filepath1)
     # ImageShear(filepath1)
     
-    # pts = []  # # 初始化 ROI顶点集合
+    pts = []  # # 初始化 ROI顶点集合
     # ImageProjectionTransformation(filepath2)
 
