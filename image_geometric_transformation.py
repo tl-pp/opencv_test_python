@@ -170,8 +170,77 @@ def ImageProjectionTransformation(filepath1):
     plt.tight_layout()
     plt.show()
 
+def ImageRemap(filepath1):
+    img = cv.imread(filepath1)
+    height, width = img.shape[:2]
+
+    mapx = np.zeros((height, width), np.float32)
+    mapy = np.zeros((height, width), np.float32)
+
+    for h in range(height):
+        for w in range(width):
+            mapx[h,w] = w   # 水平方向不变
+            mapy[h,w] = h   # 垂直方向不变
+    dst1 = cv.remap(img, mapx, mapy, cv.INTER_LINEAR)
+
+    mapx = np.array([[i*1.5 for i in range(width)] for j in range(height)], dtype=np.float32)
+    mapy = np.array([[j*1.5 for i in range(width)] for j in range(height)], dtype=np.float32)
+    dst2 = cv.remap(img, mapx, mapy, cv.INTER_LINEAR) #尺寸缩放
+
+    mapx = np.array([[i for i in range(width)] for j in range(height)], dtype=np.float32)
+    mapy = np.array([[j for i in range(width)] for j in range(height-1, -1, -1)], dtype=np.float32)
+    dst3 = cv.remap(img, mapx, mapy, cv.INTER_LINEAR) # 上下翻转 x不变， y翻转
+
+    mapx = np.array([[i for i in range(width-1, -1, -1)] for j in range(height)], dtype=np.float32)
+    mapy = np.array([[j for i in range(width)] for j in range(height)], dtype=np.float32)
+    dst4 = cv.remap(img, mapx, mapy, cv.INTER_LINEAR) # 左右翻转 x翻转， y不变
+
+    mapx = np.array([[i for i in range(width-1, -1, -1)] for j in range(height)], dtype=np.float32)
+    mapy = np.array([[j for i in range(width)] for j in range(height-1, -1, -1)], dtype=np.float32)
+    dst5 = cv.remap(img, mapx, mapy, cv.INTER_LINEAR) # 水平垂直翻转
+
+    print(img.shape, mapx.shape, mapy.shape, dst1.shape)
+
+    plt.figure(figsize=(9,6))
+    plt.subplot(231),plt.axis('off'),plt.title("1. img"),plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
+    plt.subplot(232),plt.axis('off'),plt.title("2. Copy"),plt.imshow(cv.cvtColor(dst1, cv.COLOR_BGR2RGB))
+    plt.subplot(233),plt.axis('off'),plt.title("3. Resize"),plt.imshow(cv.cvtColor(dst2, cv.COLOR_BGR2RGB))
+
+    plt.subplot(234),plt.axis('off'),plt.title("4. Flip Vertical"),plt.imshow(cv.cvtColor(dst3, cv.COLOR_BGR2RGB))
+    plt.subplot(235),plt.axis('off'),plt.title("5. Flip Horizontal"),plt.imshow(cv.cvtColor(dst4, cv.COLOR_BGR2RGB))
+    plt.subplot(236),plt.axis('off'),plt.title("6. Flip Vert&Hori"),plt.imshow(cv.cvtColor(dst5, cv.COLOR_BGR2RGB))
+    plt.tight_layout()
+    plt.show()
 
 
+
+
+def ImageRemapEx(filepath1):
+    img = cv.imread(filepath1)
+    height, width = img.shape[:2]
+
+    
+
+    borderColor = img[-1,-1,:].tolist()  # 背景填充颜色
+    dst = np.zeros(img.shape, np.uint8)
+    print(img.shape, dst.shape)
+
+    for s in range(100):
+        key = 0xFF & cv.waitKey(10)  # 按ESC退出
+        if key == 27:
+            break
+        
+        mapx = np.zeros((height, width), np.float32)
+        mapy = np.zeros((height, width), np.float32)
+
+        scale = 0.1 + 0.9 * s /100  # 0.1 -> 1.0
+        padx = 0.5 * width * (1 - scale)
+        pady = 0.5 * height * (1 - scale)
+        mapx = np.array([[((j - padx)/scale) for j in range(width)] for i in range(height)], np.float32)
+        mapy = np.array([[((i - padx)/scale) for j in range(width)] for i in range(height)], np.float32)
+        dst = cv.remap(img, mapx, mapy, cv.INTER_LINEAR, borderValue=borderColor)
+        cv.imshow("RemapWin", dst)
+    cv.destroyAllWindows()
 
 
 if __name__ == "__main__" :
@@ -187,4 +256,5 @@ if __name__ == "__main__" :
     
     pts = []  # # 初始化 ROI顶点集合
     # ImageProjectionTransformation(filepath2)
-
+    # ImageRemap(filepath1)
+    ImageRemapEx(filepath1)

@@ -66,6 +66,6 @@ def imageColor(filepath):
 
 
 if __name__ == '__main__':
-    filepath = "/home/calmcar/work/python/opencv_test/img/lena.jpg"
+    filepath = r"img/lenna.bmp"
     # imageReversal(filepath)
     imageColor(filepath)

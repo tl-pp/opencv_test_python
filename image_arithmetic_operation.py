@@ -155,8 +155,8 @@ def ImageMeanFiltering(filepath1):
 
 
 if __name__ == "__main__" :
-    filepath1 = "/home/calmcar/work/python/opencv_test/img/lenna.bmp"
-    filepath2 = "/home/calmcar/work/python/opencv_test/img/monarch.bmp"
+    filepath1 = r"img/lenna.bmp"
+    filepath2 = r"img/monarch.bmp"
 
     # ImageAdd(filepath1, filepath2)
     # ImageMask(filepath1, filepath2)
