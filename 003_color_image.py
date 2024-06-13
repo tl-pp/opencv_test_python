@@ -113,7 +113,8 @@ def AdjustHSV(filepath):
 
 
 if __name__ == '__main__':
-    filepath = "/home/calmcar/work/python/opencv_test/img/lenna.bmp"
+    filepath = r"img/Lena.tif"
+    
     # gray2ColorImage(filepath)
     # FilterColorImage(filepath)
     # AdjustColorBalance(filepath)

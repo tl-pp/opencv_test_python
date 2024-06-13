@@ -232,7 +232,8 @@ def ImageBitPlane(filepath1):
 
 
 if __name__ == "__main__" :
-    filepath1 = r"img/lenna.bmp"
+    filepath1 = r"img/Lena.tif"
+    filepath2 = r"img/Fig0301.png"
 
     # 图像翻转变换
     # ImageGrayscaleFlip(filepath1)

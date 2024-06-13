@@ -244,8 +244,8 @@ def ImageRemapEx(filepath1):
 
 
 if __name__ == "__main__" :
-    filepath1 = r"img/lenna.bmp"
-    filepath2 = r"img/remap.png"
+    filepath1 = r"img/Lena.tif"
+    filepath2 = r"img/Fig0301.png"
 
     
     # ImageTranslation(filepath1)

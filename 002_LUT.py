@@ -66,6 +66,6 @@ def imageColor(filepath):
 
 
 if __name__ == '__main__':
-    filepath = r"img/lenna.bmp"
+    filepath = r"img/Lena.tif"
     # imageReversal(filepath)
     imageColor(filepath)
