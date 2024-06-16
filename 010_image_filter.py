@@ -48,16 +48,67 @@ def ImageConvolution(filepath):
     plt.show()
 
 
+def ImageBoxFilter(filepath):
+    img = cv.imread(filepath, flags=0)
 
+    # (1) 盒式滤波器 3种实现方式
+    ksize = (5, 5)
+    kernel = np.ones(ksize, np.float32) / (ksize[0] * ksize[1])   # 生成归一化核
 
+    conv1 = cv.filter2D(img, -1, kernel)
+    conv2 = cv.blur(img, ksize)
+    conv3 = cv.boxFilter(img, -1, ksize)
 
+    print("Compare conv1 & conv2: ", (conv1 == conv2).all())
+    print("Compare conv1 & conv3: ", (conv1 == conv3).all())
 
+    # (2) 滤波器尺寸的影响
+    imgConv1 = cv.blur(img, (5, 5))
+    imgConv2 = cv.blur(img, (11, 11))
+
+    plt.figure(figsize=(9,3.2))
+    plt.subplot(131),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. boxFilter(5, 5)"),plt.imshow(imgConv1, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. boxFilter(11, 11)"),plt.imshow(imgConv2, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+
+def ImageGaussianBlur(filepath):
+    img = cv.imread(filepath, flags=0)
+
+    # (1)计算高斯核
+    kernX = cv.getGaussianKernel(5, 0)  # 一维高斯和
+    kernel = kernX * kernX.T  # 二维高斯核
+    print("1D kernel of Gaussian:{}".format(kernX.shape))
+    print(kernX.round(4))
+    print(kernX.T.round(4))
+    print("2D kernel of Gaussian:{}".format(kernel.shape))
+    print(kernel.round(4))
+
+    # (2)高斯低通滤波器
+    ksize = (11, 11)   # 高斯滤波器核的尺寸
+    GaussBlur11 = cv.GaussianBlur(img, ksize, 0)   # sigma由ksize计算
+    ksize = (43, 43)
+    GaussBlur43 = cv.GaussianBlur(img, ksize, 0)
+
+    plt.figure(figsize=(9,3.5))
+    plt.subplot(131),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. GaussianFilter(k=11)"),plt.imshow(GaussBlur11, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. GaussianFilter(k=43)"),plt.imshow(GaussBlur43, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == '__main__':
-    filepath1 = r"img/Lena.tif"
+    filepath1 = r"img/Fig1001.png"
     filepath2 = r"img/Fig0301.png"
     
 
     # 图像的卷积运算与相关运算
-    ImageConvolution(filepath1)
+    # ImageConvolution(filepath1)
+
+    # 空间滤波之盒式滤波器
+    # ImageBoxFilter(filepath1)
+
+    # 空间滤波之高斯滤波器
+    ImageGaussianBlur(filepath1)
