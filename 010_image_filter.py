@@ -99,9 +99,34 @@ def ImageGaussianBlur(filepath):
     plt.show()
 
 
+def ImageMedianBlur(filepath):
+    img = cv.imread(filepath, flags=0)
+
+    # (1) 高斯低通滤波器
+    ksize = (11, 11)
+    GaussBlur = cv.GaussianBlur(img, ksize, 0)
+
+    # (2) 中值滤波器
+    medianBlur = cv.medianBlur(img, ksize=5)
+
+    plt.figure(figsize=(9,3.5))
+    plt.subplot(131),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. GaussianFilter(k=11)"),plt.imshow(GaussBlur, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. MedianBlur(size=3)"),plt.imshow(medianBlur, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+
+
+def ImageOrderingFilter(filepath):
+    img = cv.imread(filepath, flags=0)
+    hImg, wImg = img.shape[:2]
+
+    
+
+
 if __name__ == '__main__':
     filepath1 = r"img/Fig1001.png"
-    filepath2 = r"img/Fig0301.png"
+    filepath2 = r"img/Fig1002.png"
     
 
     # 图像的卷积运算与相关运算
@@ -111,4 +136,10 @@ if __name__ == '__main__':
     # ImageBoxFilter(filepath1)
 
     # 空间滤波之高斯滤波器
-    ImageGaussianBlur(filepath1)
+    # ImageGaussianBlur(filepath1)
+
+    # 空间滤波之中值滤波器
+    # ImageMedianBlur(filepath2)
+
+    # 空间滤波器之排序滤波器
+    ImageOrderingFilter(filepath2)
