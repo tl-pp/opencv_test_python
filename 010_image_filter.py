@@ -121,6 +121,94 @@ def ImageOrderingFilter(filepath):
     img = cv.imread(filepath, flags=0)
     hImg, wImg = img.shape[:2]
 
+    # 边界填充
+    m, n = 3, 3  # 统计排序滤波器尺寸
+    hPad, wPad = int((m - 1)/2), int((n - 1)/2)
+    imgPad = cv.copyMakeBorder(img, hPad, hPad, wPad, wPad, cv.BORDER_REFLECT)
+
+    imgMedianF = np.zeros(img.shape)     # 中值滤波器
+    imgMaximumF = np.zeros(img.shape)    # 最大值滤波器
+    imgMinimumF = np.zeros(img.shape)    # 最小值滤波器
+    imgMiddleF = np.zeros(img.shape)     # 中点滤波器
+    imgAlphaF = np.zeros(img.shape)      # 修正阿尔法均值滤波器
+
+    for h in range(hImg):
+        for w in range(wImg):
+            # 当前像素的临域
+            neighborhood = imgPad[h:h+m, w:w+n]
+            padMax = np.max(neighborhood)   # 临值域最大
+            padMin = np.min(neighborhood)   # 临值域最小
+
+            # (1) 中值滤波器
+            imgMedianF[h,w] = np.median(neighborhood)
+
+            # (2) 最大值滤波器
+            imgMaximumF[h,w] = padMax
+
+            # (3) 最小值滤波器
+            imgMinimumF[h,w] = padMin
+
+            # (4) 中点滤波器
+            imgMiddleF[h,w] = int(padMax/2 + padMin/2)
+
+            # (5) 修正Alpha均值滤波器
+            d = 2    # 修正值
+            neighborSort = np.sort(neighborhood.flatten())   # 邻域像素按灰度值排序
+            sumAlpha = np.sum(neighborSort[d:m*n-d-1])       # 删除d个最大灰度值，d个最小灰度值
+            imgAlphaF[h,w] = sumAlpha / (m*n -2*d)           # 对剩余像素进行算术平均
+
+    plt.figure(figsize=(9,6.5))
+    plt.subplot(231),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(232),plt.axis('off'),plt.title("2. Median  filter"),plt.imshow(imgMedianF, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(233),plt.axis('off'),plt.title("3. Maximum filter"),plt.imshow(imgMaximumF, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(234),plt.axis('off'),plt.title("4. Minumun filter"),plt.imshow(imgMinimumF, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(235),plt.axis('off'),plt.title("5. Middle  filter"),plt.imshow(imgMiddleF, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(236),plt.axis('off'),plt.title("6. Alpha   filter"),plt.imshow(imgAlphaF, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+    
+            
+def ImageAdaptationBoxFilter(filepath):
+    img = cv.imread(filepath, flags=0)
+    hImg, wImg = img.shape[:2]
+
+    # 边界填充
+    m, n = 5, 5  # 统计排序滤波器尺寸 mxn矩形邻域
+    hPad, wPad = int((m - 1)/2), int((n - 1)/2)
+    imgPad = cv.copyMakeBorder(img, hPad, hPad, wPad, wPad, cv.BORDER_REFLECT)
+
+    # 估计原始图像的噪声方差 VarImg
+    mean, stddev = cv.meanStdDev(img)    # 图像均值、方差
+    varImg = stddev ** 2
+
+    # 自适应局部降噪
+    epsilon = 1e-8
+    imgAdaptLocal = np.zeros(img.shape)
+
+    for h in range(hImg):
+        for w in range(wImg):
+            # 当前像素的临域
+            neighborhood = imgPad[h:h+m, w:w+n]
+            meanSxy, stddevSxy = cv.meanStdDev(neighborhood)   # 邻域局部均值
+            varSxy = stddevSxy ** 2
+            ratioVar = min(varImg / (varSxy + epsilon), 1.0)   # 加性噪声 varImg < varSxy
+            imgAdaptLocal[h,w] = img[h,w] - ratioVar * (img[h,w] - meanSxy)
+
+    # 均值滤波器， 用于比较
+    imgAriMean = cv.boxFilter(img, -1, (m,n))
+
+    plt.figure(figsize=(9,3.5))
+    plt.subplot(131),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. Box filter"),plt.imshow(imgAriMean, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. Adapt local filter"),plt.imshow(imgAdaptLocal, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+
+
+
+
+
+
     
 
 
@@ -142,4 +230,7 @@ if __name__ == '__main__':
     # ImageMedianBlur(filepath2)
 
     # 空间滤波器之排序滤波器
-    ImageOrderingFilter(filepath2)
+    # ImageOrderingFilter(filepath2)
+
+    # 空间滤波器之自适应滤波器
+    # ImageAdaptationBoxFilter(filepath2)
