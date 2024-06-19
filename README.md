@@ -8,4 +8,5 @@
 007_image_grayscale_variation : 图像灰度变换的一些方法    
 008_image_histogram: 图像的直方图处理的一些方法     
 009_image_threshold: 图像阈值的一些方法     
-010_image_fiter: 图像卷积与空间滤波
+010_image_Spatial_fiter: 图像卷积与空间滤波
+011_image_frequency_domain_filter: 傅里叶变换与频域滤波     
