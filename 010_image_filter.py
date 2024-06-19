@@ -443,6 +443,54 @@ def ImageGaussianPyramid(filepath):
     plt.show()
 
 
+def ImageLaplacianPyramid(filepath):
+    img = cv.imread(filepath, flags=1)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
+    # 图像向下取样， 构造高斯金字塔
+    pyrG0 = img.copy()           # G0 (512,512)
+    pyrG1 = cv.pyrDown(pyrG0)    # G1 (256,256)
+    pyrG2 = cv.pyrDown(pyrG1)    # G2 (128,128)
+    pyrG3 = cv.pyrDown(pyrG2)    # G3 (64,64)
+    pyrG4 = cv.pyrDown(pyrG3)    # G3 (32,32)
+    print(pyrG0.shape, pyrG1.shape, pyrG2.shape, pyrG3.shape, pyrG4.shape)
+
+    # 构造拉普拉斯金字塔， 高斯金字塔的每层减去其上层图像的上采样
+    pyrL0 = pyrG0 - cv.pyrUp(pyrG1)    # L0 (512,512)
+    pyrL1 = pyrG1 - cv.pyrUp(pyrG2)    # L1 (256,256)
+    pyrL2 = pyrG2 - cv.pyrUp(pyrG3)    # L2 (128,128)
+    pyrL3 = pyrG3 - cv.pyrUp(pyrG4)    # L3 (64,64)
+    print(pyrL0.shape, pyrL1.shape, pyrL2.shape, pyrL3.shape)
+
+    # 向上采样恢复高分辨率
+    rebuildG3 = pyrL3 + cv.pyrUp(pyrG4)
+    rebuildG2 = pyrL2 + cv.pyrUp(rebuildG3)
+    rebuildG1 = pyrL1 + cv.pyrUp(rebuildG2)
+    rebuildG0 = pyrL0 + cv.pyrUp(rebuildG1)
+    print(rebuildG0.shape, rebuildG1.shape, rebuildG2.shape, rebuildG3.shape)
+
+    print("diff of rebuild: ", np.mean(abs(rebuildG0 - img)))
+
+    plt.figure(figsize=(10,8))
+    plt.subplot(341),plt.axis('off'),plt.title("G0 " + str(pyrG0.shape[:2])),plt.imshow(cv.cvtColor(pyrG0, cv.COLOR_BGR2RGB))
+    plt.subplot(342),plt.axis('off'),plt.title("G1 " + str(pyrG1.shape[:2])),plt.imshow(cv.cvtColor(pyrG1, cv.COLOR_BGR2RGB))
+    plt.subplot(343),plt.axis('off'),plt.title("G2 " + str(pyrG2.shape[:2])),plt.imshow(cv.cvtColor(pyrG2, cv.COLOR_BGR2RGB))
+    plt.subplot(344),plt.axis('off'),plt.title("G3 " + str(pyrG3.shape[:2])),plt.imshow(cv.cvtColor(pyrG3, cv.COLOR_BGR2RGB))
+
+    plt.subplot(345),plt.axis('off'),plt.title("L0 " + str(pyrL0.shape[:2])),plt.imshow(cv.cvtColor(pyrL0, cv.COLOR_BGR2RGB))
+    plt.subplot(346),plt.axis('off'),plt.title("L1 " + str(pyrL1.shape[:2])),plt.imshow(cv.cvtColor(pyrL1, cv.COLOR_BGR2RGB))
+    plt.subplot(347),plt.axis('off'),plt.title("L2 " + str(pyrL2.shape[:2])),plt.imshow(cv.cvtColor(pyrL2, cv.COLOR_BGR2RGB))
+    plt.subplot(348),plt.axis('off'),plt.title("L3 " + str(pyrL3.shape[:2])),plt.imshow(cv.cvtColor(pyrL3, cv.COLOR_BGR2RGB))
+
+    plt.subplot(349),plt.axis('off'),plt.title("LaplaceRebuild " + str(rebuildG0.shape[:2])),plt.imshow(cv.cvtColor(rebuildG0, cv.COLOR_BGR2RGB))
+    plt.subplot(3,4,10),plt.axis('off'),plt.title("LaplaceRebuild " + str(rebuildG1.shape[:2])),plt.imshow(cv.cvtColor(rebuildG1, cv.COLOR_BGR2RGB))
+    plt.subplot(3,4,11),plt.axis('off'),plt.title("LaplaceRebuild " + str(rebuildG2.shape[:2])),plt.imshow(cv.cvtColor(rebuildG2, cv.COLOR_BGR2RGB))
+    plt.subplot(3,4,12),plt.axis('off'),plt.title("LaplaceRebuild " + str(rebuildG3.shape[:2])),plt.imshow(cv.cvtColor(rebuildG3, cv.COLOR_BGR2RGB))
+
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == '__main__':
     filepath1 = r"img/Fig1001.png"
     filepath2 = r"img/Fig1002.png"
@@ -488,4 +536,7 @@ if __name__ == '__main__':
     # ImageScharr(filepath1)
 
     # 高斯金字塔
-    ImageGaussianPyramid(filepath5)
+    # ImageGaussianPyramid(filepath5)
+
+    # 拉普拉斯金字塔
+    ImageLaplacianPyramid(filepath5)
