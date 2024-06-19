@@ -310,12 +310,146 @@ def ImagePassivation(filepath):
     plt.show()
 
 
+def ImageLaplacian(filepath):
+    img = cv.imread(filepath, flags=0)
+
+    # (1)使用函数 cv.filter2D 计算laplacian K1 K2
+    LaplacianK1 = np.array([[0,1,0], [1,-4,1], [0,1,0]])    # K1
+    imgLapK1 = cv.filter2D(img, -1, LaplacianK1, cv.BORDER_REFLECT)
+    LaplacianK2 = np.array([[1,1,1], [1,-8,1],[1,1,1]])
+    imgLapK2 = cv.filter2D(img, -1, LaplacianK2, cv.BORDER_REFLECT)
+
+    # (2)使用函数 cv.laplacian 计算 Laplacian
+    imgLaplacian = cv.Laplacian(img, cv.CV_32F, ksize=3)   # 输出为浮点类型数据
+    abslaplacian = cv.convertScaleAbs(imgLaplacian)        # 拉伸到[0,255]
+    print(type(imgLaplacian[0,0]), type(abslaplacian[0,0]))
+    print(imgLaplacian)
+    print(abslaplacian)
+
+    plt.figure(figsize=(9,3.5))
+    plt.subplot(131),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. Laplacian(float)"),plt.imshow(imgLaplacian, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. Laplacian(abs)"),plt.imshow(abslaplacian, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+
+
+def ImageSobel(filepath):
+    img = cv.imread(filepath, flags=0)
+
+    # (1) 使用函数cv.filter2D 实现
+    kernSobelX = np.array([[-1,0,1], [-2,0,2], [-1,0,1]])
+    kernSobelY = np.array([[-1,-2,-1], [0,0,0], [1,2,1]])
+    SobelX = cv.filter2D(img, -1, kernSobelX)
+    SobelY = cv.filter2D(img, -1, kernSobelY)
+
+    # (2) 使用函数cv.Sobel 实现
+    imgSobelX = cv.Sobel(img, cv.CV_16S, 1, 0)    # x轴方向
+    imgSobelY = cv.Sobel(img, cv.CV_16S, 0, 1)    # x轴方向
+    absSobelX = cv.convertScaleAbs(imgSobelX)
+    absSobelY = cv.convertScaleAbs(imgSobelY)
+    SobelXY = cv.add(absSobelX, absSobelY)
+
+    plt.figure(figsize=(9,6.5))
+    plt.subplot(231),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(232),plt.axis('off'),plt.title("2. SobelX(float)"),plt.imshow(imgSobelX, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(233),plt.axis('off'),plt.title("3. SobelYfloat)"),plt.imshow(imgSobelY, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(234),plt.axis('off'),plt.title("4. SobelXY(abs)"),plt.imshow(SobelXY, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(235),plt.axis('off'),plt.title("5. SobelX(abs)"),plt.imshow(absSobelX, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(236),plt.axis('off'),plt.title("6. SobelY(abs)"),plt.imshow(absSobelY, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+
+
+def ImageScharr(filepath):
+    img = cv.imread(filepath, flags=0)
+
+    # (1) 使用函数cv.filter2D 实现
+    kernScharrX = np.array([[-3,0,3], [-10,0,10], [-3,0,3]])
+    kernScharrY = np.array([[-3,10,-3], [0,0,0], [3,10,3]])
+    ScharrX = cv.filter2D(img, -1, kernScharrX)
+    ScharrY = cv.filter2D(img, -1, kernScharrY)
+
+    # (2) 使用函数cv.Scharr 实现
+    imgScharrX = cv.Scharr(img, cv.CV_16S, 1, 0)    # x轴方向
+    imgScharrY = cv.Scharr(img, cv.CV_16S, 0, 1)    # x轴方向
+    absScharrX = cv.convertScaleAbs(imgScharrX)
+    absScharrY = cv.convertScaleAbs(imgScharrY)
+    ScharrXY = cv.add(absScharrX, absScharrY)
+
+    plt.figure(figsize=(9,3.5))
+    plt.subplot(131),plt.axis('off'),plt.title("1. ScharrX(abs)"),plt.imshow(absScharrX, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. ScharrY(abs)"),plt.imshow(absScharrY, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. ScharrXY(abs)"),plt.imshow(ScharrXY, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+
+
+def ImageGaussianPyramid(filepath):
+    img = cv.imread(filepath, flags=1)
+
+    # 图像向下采样
+    pyrG0 = img.copy()        # G0 (512,512)
+    pyrG1 = cv.pyrDown(pyrG0)    # G1 (256,256)
+    pyrG2 = cv.pyrDown(pyrG1)    # G2 (128,128)
+    pyrG3 = cv.pyrDown(pyrG2)    # G3 (64,64)
+    print(pyrG0.shape, pyrG1.shape, pyrG2.shape, pyrG3.shape)
+    
+    # 图像向上采样
+    pyrU3 = pyrG3.copy()
+    pyrU2 = cv.pyrUp(pyrU3)
+    pyrU1 = cv.pyrUp(pyrU2)
+    pyrU0 = cv.pyrUp(pyrU1)
+    print(pyrU0.shape, pyrU1.shape, pyrU2.shape, pyrU3.shape)
+
+    plt.figure(figsize=(9,5))
+    plt.subplot(241),plt.axis('off'),plt.title("G0 " + str(pyrG0.shape[:2])),plt.imshow(cv.cvtColor(pyrG0, cv.COLOR_BGR2RGB))
+    plt.subplot(242),plt.axis('off'),plt.title("->G1 " + str(pyrG1.shape[:2]))
+    down1 = np.ones_like(img, dtype=np.uint8) * 128
+    down1[:pyrG1.shape[0], :pyrG1.shape[1], :] = pyrG1
+    plt.imshow(cv.cvtColor(down1, cv.COLOR_BGR2RGB))
+    
+    plt.subplot(243),plt.axis('off'),plt.title("->G2 " + str(pyrG2.shape[:2]))
+    down2 = np.ones_like(img, dtype=np.uint8) * 128
+    down2[:pyrG2.shape[0], :pyrG2.shape[1], :] = pyrG2
+    plt.imshow(cv.cvtColor(down2, cv.COLOR_BGR2RGB))
+
+    plt.subplot(244),plt.axis('off'),plt.title("->G3 " + str(pyrG3.shape[:2]))
+    down3 = np.ones_like(img, dtype=np.uint8) * 128
+    down3[:pyrG3.shape[0], :pyrG3.shape[1], :] = pyrG3
+    plt.imshow(cv.cvtColor(down3, cv.COLOR_BGR2RGB))
+    
+    plt.subplot(245),plt.axis('off'),plt.title("U0 " + str(pyrU0.shape[:2]))
+    up0 = np.ones_like(img, dtype=np.uint8) * 128
+    up0[:pyrU0.shape[0], :pyrU0.shape[1], :] = pyrU0
+    plt.imshow(cv.cvtColor(up0, cv.COLOR_BGR2RGB))
+
+    plt.subplot(246),plt.axis('off'),plt.title("U1 " + str(pyrU1.shape[:2]))
+    up1 = np.ones_like(img, dtype=np.uint8) * 128
+    up1[:pyrU1.shape[0], :pyrU1.shape[1], :] = pyrU1
+    plt.imshow(cv.cvtColor(up1, cv.COLOR_BGR2RGB))
+
+    plt.subplot(247),plt.axis('off'),plt.title("U2 " + str(pyrU2.shape[:2]))
+    up2 = np.ones_like(img, dtype=np.uint8) * 128
+    up2[:pyrU2.shape[0], :pyrU2.shape[1], :] = pyrU2
+    plt.imshow(cv.cvtColor(up2, cv.COLOR_BGR2RGB))
+
+    plt.subplot(248),plt.axis('off'),plt.title("U3 " + str(pyrU3.shape[:2]))
+    up3 = np.ones_like(img, dtype=np.uint8) * 128
+    up3[:pyrU3.shape[0], :pyrU3.shape[1], :] = pyrU3
+    plt.imshow(cv.cvtColor(up3, cv.COLOR_BGR2RGB))
+    
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == '__main__':
     filepath1 = r"img/Fig1001.png"
     filepath2 = r"img/Fig1002.png"
     filepath3 = r"img/Fig1003.png"
     filepath4 = r"img/LenaGauss.png"
-    
+    filepath5 = r"img/Fig0301.png"
+
 
     # 图像的卷积运算与相关运算
     # ImageConvolution(filepath1)
@@ -342,4 +476,16 @@ if __name__ == '__main__':
     # ImageBilateralFilter(filepath4)
 
     # 空间滤波之钝化掩蔽与高提升滤波
-    ImagePassivation(filepath4)
+    # ImagePassivation(filepath4)
+
+    # 拉普拉斯算子 Laplacian
+    # ImageLaplacian(filepath1)
+
+    # sobel算子
+    # ImageSobel(filepath1)
+
+    # scharr算子
+    # ImageScharr(filepath1)
+
+    # 高斯金字塔
+    ImageGaussianPyramid(filepath5)
