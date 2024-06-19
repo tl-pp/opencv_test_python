@@ -173,7 +173,7 @@ def ImageAdaptationBoxFilter(filepath):
     hImg, wImg = img.shape[:2]
 
     # 边界填充
-    m, n = 5, 5  # 统计排序滤波器尺寸 mxn矩形邻域
+    m, n = 5, 5  # 滤波器尺寸 mxn矩形邻域
     hPad, wPad = int((m - 1)/2), int((n - 1)/2)
     imgPad = cv.copyMakeBorder(img, hPad, hPad, wPad, wPad, cv.BORDER_REFLECT)
 
@@ -205,16 +205,116 @@ def ImageAdaptationBoxFilter(filepath):
     plt.show()
 
 
+def ImageAdaptationMedFilter(filepath):
+    img = cv.imread(filepath, flags=0)
+    hImg, wImg = img.shape[:2]
+    print(hImg, wImg)
+
+    # 边界填充
+    smax = 7
+    m, n = smax, smax    # 滤波器尺寸 mxn矩形邻域
+    hPad, wPad = int((m - 1)/2), int((n - 1)/2)
+    imgPad = cv.copyMakeBorder(img, hPad, hPad, wPad, wPad, cv.BORDER_REFLECT)
+
+    imgMedianFilter = np.zeros(img.shape)
+    imgAdaptMedFilter = np.zeros(img.shape)
+
+    for h in range(hPad, hPad + hImg):
+        for w in range(wPad, wPad+ wImg):
+            # (1)中值滤波器
+            ksize = 3
+            kk = ksize // 2
+            win = imgPad[h-kk:h+kk+1, w-kk:w+kk+1]
+            imgMedianFilter[h-hPad, w-wPad] = np.median(win)
+
+            # (2)自适应中值滤波器
+            ksize = 3
+            zxy = img[h-hPad, w-wPad]
+            while True:
+                k = ksize//2
+                win = imgPad[h-k:h+k+1, w-k:w+k+1]
+                zmin, zmed, zmax = np.min(win), np.median(win), np.max(win)
+
+                if zmin < zmed < zmax :   # zmed 不是噪声
+                    if zmin < zxy < zmax:
+                        imgAdaptMedFilter[h-hPad, w-wPad] = zxy
+                    else:
+                        imgAdaptMedFilter[h-hPad, w-wPad] = zmed
+                    break
+                else:
+                    if ksize >= smax:  # 达到最大窗口
+                        imgAdaptMedFilter[h-hPad, w-wPad] = zmed
+                        break
+                    else:              # 未达到最大窗口
+                        ksize = ksize+2    # 增大窗口尺寸
+                    
+    plt.figure(figsize=(9,3.5))
+    plt.subplot(131),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. Median filter"),plt.imshow(imgMedianFilter, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. Adapt Median filter"),plt.imshow(imgMedianFilter, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
 
 
+def ImageBilateralFilter(filepath):
+    img = cv.imread(filepath, flags=0)
+    hImg, wImg = img.shape[:2]
+    print(hImg, wImg)
 
-
+    # (1) 高斯滤波核
+    ksize = (11, 11)
+    ImageGaussianF = cv.GaussianBlur(img, ksize, 0, 0)
     
+    # (2) 双边滤波器
+    imgBilateralF = cv.bilateralFilter(img, d=5, sigmaColor=40, sigmaSpace=10)
+
+    plt.figure(figsize=(9,3.5))
+    plt.subplot(131),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(132),plt.axis('off'),plt.title("2. Gaussian filter"),plt.imshow(ImageGaussianF, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(133),plt.axis('off'),plt.title("3. Bilateral filter"),plt.imshow(imgBilateralF, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
+
+
+def ImagePassivation(filepath):
+    img = cv.imread(filepath, flags=0)
+    hImg, wImg = img.shape[:2]
+    print(hImg, wImg)
+
+    # (1) 对原始图像进行高斯平滑
+    imgGauss = cv.GaussianBlur(img, (11, 11), sigmaX=5.0)
+
+    # (2) 掩蔽模版： 从原始图像中减去平滑图像
+    mashPassivate = cv.subtract(img, imgGauss)
+
+    # (3) 掩蔽模版与原始图像相加
+    # k<1 减弱钝化掩蔽
+    maskWeak = cv.multiply(mashPassivate, 0.5)
+    passivation1 = cv.add(img,maskWeak)
+
+    # k=1 钝化掩蔽
+    passivation2 = cv.add(img, mashPassivate)
+
+    # k>1 高提升滤波
+    maskEnhance = cv.multiply(mashPassivate,2.0)
+    passivation3 = cv.add(img, maskEnhance)
+
+    plt.figure(figsize=(9,6.5))
+    plt.subplot(231),plt.axis('off'),plt.title("1. Original"),plt.imshow(img, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(232),plt.axis('off'),plt.title("2. GaussBlur"),plt.imshow(imgGauss, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(233),plt.axis('off'),plt.title("3. PassivateMask"),plt.imshow(mashPassivate, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(234),plt.axis('off'),plt.title("4. passivation(k=0.5)"),plt.imshow(passivation1, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(235),plt.axis('off'),plt.title("5. passivation(k=1.0)"),plt.imshow(passivation2, cmap='gray', vmin=0, vmax=255)
+    plt.subplot(236),plt.axis('off'),plt.title("6. passivation(k=2.0)"),plt.imshow(passivation3, cmap='gray', vmin=0, vmax=255)
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == '__main__':
     filepath1 = r"img/Fig1001.png"
     filepath2 = r"img/Fig1002.png"
+    filepath3 = r"img/Fig1003.png"
+    filepath4 = r"img/LenaGauss.png"
     
 
     # 图像的卷积运算与相关运算
@@ -234,3 +334,12 @@ if __name__ == '__main__':
 
     # 空间滤波器之自适应滤波器
     # ImageAdaptationBoxFilter(filepath2)
+
+    # 空间滤波器之自适应中值滤波器
+    # ImageAdaptationMedFilter(filepath3)
+
+    # 空间滤波器之双边滤波器
+    # ImageBilateralFilter(filepath4)
+
+    # 空间滤波之钝化掩蔽与高提升滤波
+    ImagePassivation(filepath4)
