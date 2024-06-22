@@ -45,12 +45,6 @@ def ImageOpencv2DFFT(filepath):
     plt.show()
 
 
-
-
-
-    
-
-
 if __name__ == "__main__":
     filepath1 = r"img/Fig1101.png"
 

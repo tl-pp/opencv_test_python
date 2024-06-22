@@ -9,4 +9,5 @@
 008_image_histogram: 图像的直方图处理的一些方法     
 009_image_threshold: 图像阈值的一些方法     
 010_image_Spatial_fiter: 图像卷积与空间滤波
-011_image_frequency_domain_filter: 傅里叶变换与频域滤波     
+011_image_frequency_domain_filter: 傅里叶变换与频域滤波         
+012_image_morphological: 形态学图像处理     
