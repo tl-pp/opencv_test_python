@@ -84,3 +84,5 @@ if __name__ == "__main__":
 
     # 霍夫变换直线检测
     ImageHough(filepath2)
+
+    ## TODO 雷登变换 、 退化图像复原
